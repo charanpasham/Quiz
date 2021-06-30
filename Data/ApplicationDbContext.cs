@@ -3,10 +3,6 @@ using IdentityServer4.EntityFramework.Options;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Quiz.Data
 {
@@ -17,11 +13,11 @@ namespace Quiz.Data
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
         }
-        public DbSet<Models.Quiz> Quiz { get; set; }
-        public DbSet<QuizAnswers> QuizAnswers { get; set; }
-        public DbSet<QuizCategory> QuizCategory { get; set; }
-        public DbSet<QuizQuestion> QuizQuestion { get; set; }
-        public DbSet<QuizResponse> QuizResponse { get; set; }
-        public DbSet<QuizTaken> QuizTaken { get; set; }
+        public DbSet<Quizes> Quizes { get; set; }
+        public DbSet<Answers> Answers { get; set; }
+        public DbSet<Category> Category { get; set; }
+        public DbSet<Questions> Question { get; set; }
+        public DbSet<Response> Response { get; set; }
+        public DbSet<Taken> Taken { get; set; }
     }
 }

@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Quiz.Data;
 using Quiz.Models;
+using Quiz.RequestModels;
+using Quiz.ResponseModels;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -27,63 +31,66 @@ namespace Quiz.Controllers
             this._httpContext = _httpContext;
             _userId = userManager.GetUserId(_httpContext.HttpContext.User);
         }
+
+
         // GET: api/<controller>
-        [HttpGet("category")]
-        public  IEnumerable<QuizCategory> Get()
+        [HttpGet]
+        public async Task<IEnumerable<CategoryResponse>> Get(int limit = 10, int offset = 0)
         {
-            var userId = _userId;
-            return _context.QuizCategory.ToList();
+            var categoryResponse = new List<CategoryResponse>();
+            var categories = await _context.Category.
+                             OrderBy(cat => cat.QuizCategoryType)
+                             .Skip(offset)
+                             .Take(limit)
+                             .ToListAsync();
+            foreach (var category in categories)
+            {
+                categoryResponse.Add(new CategoryResponse()
+                {
+                    Id = category.CategoryId,
+                    Name = category.QuizCategoryType,
+                });
+            }
+            return categoryResponse;
         }
-
-        // GET api/<controller>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<controller>
-        // [HttpPost("category")]
-        // public void Post([FromBody]QuizCategory category)
-        // {
-        //     _context.QuizCategory.Add(category);
-        //     _context.SaveChanges();
-        // }
-
 
         // POST api/<controller>
         [HttpPost("quiz")]
-        public void Post([FromBody]Quiz.Models.Quiz quiz)
+        public void Post([FromBody] QuizRequest quizRequest)
         {
-            _context.Quiz.Add(quiz);
+            var quiz = new Quizes
+            {
+                Title = quizRequest.Title,
+                Summary = quizRequest.Summary,
+                Score = quizRequest.Score,
+                // Exception handler will kick off when trying to insert the categoryId's that doesn't exist.
+                CategoryId = quizRequest.CategoryId,
+            };
+            _context.Quizes.Add(quiz);
             _context.SaveChanges();
         }
 
-        // PUT api/<controller>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        // GET: api/<controller>
+        [HttpGet("CategoryById")]
+        public CategoryResponse QuizById(int categoryId)
         {
+            var category = _context.Category.FirstOrDefault(qc => qc.CategoryId == categoryId);
+            return new CategoryResponse
+            {
+                Id = category.CategoryId,
+                Name = category.QuizCategoryType,
+            };
         }
 
-        // DELETE api/<controller>/5
-        [HttpDelete("deleteCategory/{id}")]
-        public void DeleteCategory(int id)
-        {
-            var foundCategory = _context.QuizCategory.FirstOrDefault(category => category.QuizCategoryId == id);
-            if (foundCategory != null)
-            {
-                _context.QuizCategory.Remove(foundCategory);
-            }
-        }
 
         // DELETE api/<controller>/5
         [HttpDelete("deleteQuiz/{id}")]
         public void DeleteQuiz(int id)
         {
-            var foundQuiz = _context.Quiz.FirstOrDefault(quiz => quiz.QuizId == id);
+            var foundQuiz = _context.Quizes.FirstOrDefault(quiz => quiz.QuizesId == id);
             if (foundQuiz != null)
             {
-                _context.Quiz.Remove(foundQuiz);
+                _context.Quizes.Remove(foundQuiz);
             }
         }
     }

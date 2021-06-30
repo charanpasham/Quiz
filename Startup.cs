@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Quiz.Data;
@@ -11,6 +8,11 @@ using Quiz.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSwag;
+using Microsoft.AspNetCore.Diagnostics;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace Quiz
 {
@@ -47,6 +49,9 @@ namespace Quiz
             {
                 configuration.RootPath = "ClientApp/build";
             });
+
+            // Register the swagger sevice
+            services.AddSwaggerDocument();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,6 +71,11 @@ namespace Quiz
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            // Register the swagger generator and the swagger UI middlewares
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
+
             app.UseSpaStaticFiles();
 
             app.UseRouting();
@@ -73,6 +83,16 @@ namespace Quiz
             app.UseAuthentication();
             app.UseIdentityServer();
             app.UseAuthorization();
+
+            app.UseExceptionHandler(a => a.Run(async context =>
+            {
+                var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                var exception = exceptionHandlerPathFeature.Error;
+
+                var result = JsonConvert.SerializeObject(new { error = exception.Message });
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(result);
+            }));
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

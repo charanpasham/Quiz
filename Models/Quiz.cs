@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Quiz.Models
 {
-    public class Quiz
+    public class Quizes
     {
-        public  int QuizId { get; set; }
+        public int QuizesId { get; set; }
         public string Title { get; set; }
         public string Summary { get; set; }
         public int Score { get; set; }
+        public int CategoryId { get; set; }
 
 
-        public ICollection<QuizTaken> QuizTaken { get; set; }
+        public ICollection<Taken> Taken { get; set; }
 
-        public ICollection<QuizQuestion> QuizQuestions { get; set; }
+        public ICollection<Questions> Questions { get; set; }
     }
 }
